@@ -3,8 +3,11 @@ import urllib, json, pickle
 
 API_KEY = open("api_key", "r").readline()
 
+interactive=False
+
 def notify(pricestr):
-    print(pricestr)
+    if interactive:
+        print(pricestr)
     from pushbullet import Pushbullet
     pb = Pushbullet(API_KEY)
     pb.push_note("New lowest price", pricestr)
@@ -20,7 +23,8 @@ def pricecheck(itemName):
     low = low.replace(",", ".")
     pc = float(low)
 
-    print(u"Current lowest prize '%s': %3.2f\u20ac" % (itemName, pc))
+    if interactive:
+        print(u"Current lowest prize '%s': %3.2f\u20ac" % (itemName, pc))
 
     # lowest price persistent storage
     pickleFile = "lowest."+enc+".p"
@@ -33,11 +37,11 @@ def pricecheck(itemName):
         pass
 
     if lowest:
-        if low < lowest:
-            notify(u"Lowered price '%s': %3.2f\u20ac" % (itemName, pc))
+        if pc != lowest:
+	    if pc < lowest:
+                notify(u"Lowered price '%s': %3.2f\u20ac (from %3.2f\u20ac)" % (itemName, pc, lowest))
             pickle.dump(pc, open(pickleFile, "wb"))
     else:
-#        notify(u"First run price '%s': %3.2f\u20ac" % (itemName, pc))
         pickle.dump(pc, open(pickleFile, "wb"))
 
 
